@@ -1,4 +1,4 @@
-"""Typed errors raised by the ingestion layer."""
+"""Typed errors raised across the pipeline."""
 
 from __future__ import annotations
 
@@ -44,3 +44,45 @@ class InsufficientContentError(IngestionError):
             f"Extracted content from '{source}' was only {char_count} characters "
             "and is likely navigation boilerplate or an unrendered SPA shell"
         )
+
+
+class MissingResumeSectionError(IngestionError):
+    """Raised when a resume PDF's section headings couldn't all be detected."""
+
+    def __init__(self, path: str, found: list[str], missing: list[str]) -> None:
+        self.path = path
+        self.found = found
+        self.missing = missing
+        found_str = ", ".join(found) if found else "none"
+        missing_str = ", ".join(missing)
+        super().__init__(
+            f"Could not detect a '{missing_str}' section heading in '{path}'. "
+            f"Sections detected: {found_str}. "
+            "This usually means the resume uses an unusual heading (e.g. 'Career History' "
+            "instead of 'Experience') or a multi-column layout that confuses reading order. "
+            "Try renaming the heading to a standard one (Experience, Education, Skills) or "
+            "using a single-column layout."
+        )
+
+
+class LLMResponseError(Exception):
+    """Raised when the model's structured-output response couldn't be parsed
+    as valid, schema-conforming JSON after retries.
+
+    DeepSeek's JSON mode has no server-side schema enforcement (unlike some
+    other providers), and their own API docs note it can occasionally return
+    an empty response — this is the terminal error after retrying that.
+    """
+
+    def __init__(self, model: str, reason: str) -> None:
+        self.model = model
+        self.reason = reason
+        super().__init__(f"Model '{model}' did not return a usable response: {reason}")
+
+
+class DocumentCompilationError(Exception):
+    """Raised when the Typst engine fails to compile a resume to PDF."""
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
+        super().__init__(f"Resume PDF compilation failed: {reason}")

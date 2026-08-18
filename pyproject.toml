@@ -11,6 +11,10 @@ dependencies = [
     "playwright>=1.45",
     "langgraph>=0.2",
     "langchain-core>=0.2",
+    "openai>=1.50",
+    "python-dotenv>=1.0",
+    "typst>=0.13",
+    "streamlit>=1.38",
 ]
 
 [project.optional-dependencies]
@@ -18,6 +22,9 @@ dev = [
     "pytest>=8.2",
     "pytest-asyncio>=0.23",
 ]
+
+[project.scripts]
+resume-tailor = "resume_tailor.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]
